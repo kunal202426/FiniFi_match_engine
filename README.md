@@ -1,4 +1,4 @@
-#**THREE WAY MATCH**#
+#THREE WAY MATCH
 - we upload the three documents namely - PO (purchase order) , GRN (Goods received Note) and Invoice (Tax Invoice) in PDF formats only.
 - the three pdfs are parsed with the help of LLM model , Gemini (free - tier ) in this case.
 - after parsing i stored it in MongoDB
