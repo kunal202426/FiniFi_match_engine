@@ -14,6 +14,7 @@
 - three combined prompts for strict JSON 
 
 ***DESIGN CHOICES***
+
   -> wrapping fixed by gemini generated JSON (```) - we trimmed it.
   
   -> date formatting was inconsistent - '/' and '-' problems.
