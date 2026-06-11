@@ -1,0 +1,36 @@
+{
+  "poNumber": "CI4PO05788",
+  "status": "partially_matched",
+  "reasons": [
+    {
+      "code": "item_missing_in_po",
+      "item": "Frozen PorkHam"
+    },
+    {
+      "code": "invoice_qty_exceeds_grn_qty",
+      "item": "Pork Salami 200.0 g",
+      "invoiceQty": 115,
+      "grnQty": 75
+    },
+    {
+      "code": "invoice_qty_exceeds_po_qty",
+      "item": "Pork Salami 200.0 g",
+      "invoiceQty": 115,
+      "poQty": 75
+    },
+    {
+      "code": "grn_qty_exceeds_po_qty",
+      "item": "Veg & Paneer Momos 24 Pieces",
+      "grnQty": 475,
+      "poQty": 75
+    },
+    {
+      "code": "invoice_date_after_po_date",
+      "invoice": "IN25MH2504251",
+      "invoiceDate": "2026-03-24T00:00:00.000Z",
+      "poDate": "2026-03-16T18:30:00.000Z"
+    }
+  ],
+  "note": "the live API also returns a full documents object (po, grns[], invoices[]) - omitted here for brevity",
+  "documents": {}
+}
