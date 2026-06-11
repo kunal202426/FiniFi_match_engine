@@ -15,6 +15,8 @@
 
 ***DESIGN CHOICES***
   -> wrapping fixed by gemini generated JSON (```) - we trimmed it.
+  
   -> date formatting was inconsistent - '/' and '-' problems.
+  
   -> FallBack to multiple API keys as we are using Free tier gemini keys.
 
