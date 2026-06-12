@@ -27,14 +27,20 @@
      invoice uses the vendor's own code (FG-P-F-0503). so the invoice code matches
      nothing in the other two.
 
-  -> PO and GRN i just join directly on itemCode - they literally share the same
-     code, no need to guess. its only the invoice that cant join on code, so for
-     the invoice i fall back to matching on product description.
+  -> PO and GRN i join directly on itemCode - they literally share the same code,
+     no need to guess. only the invoice side needs work.
 
-  -> description matching (invoice side only) - clean the text (drop brand words
-     like Meatigo, Frozen, units etc), break into words, score two descriptions by
-     how many words they share. each invoice line picks its single best PO item and
-     i add up the qtys. grn qtys just get summed straight by code.
+  -> for the invoice, i ask gemini itself to map each invoice line to the best
+     PO itemCode in one batched call. it gets the PO list with codes/descriptions
+     + the invoice lines, and returns an array of codes (or null per line). using
+     the LLM here is way better than tokenizing because gemini can read past
+     missing spaces ("PorkHam"), tell the 24-piece momos from the 10-piece by
+     unitRate, and generally handle the noise that a word-overlap function cant.
+
+  -> if gemini fails (quota, garbage output, wrong length, unknown code), the
+     code falls back to a hand-rolled fuzzy matcher (tokenize + shared word
+     count). so the engine never breaks even if the AI is unavailable. and the
+     final fallback for an invoice line that still doesnt map is `item_missing_in_po`.
 
   -> 4 rules , each gives a reason code :
      - grn qty > po qty  -> grn_qty_exceeds_po_qty
@@ -61,15 +67,15 @@
 - rule 4 (invoice date not after po date) i kept exactly as written even though in real life invoice always comes after the po. just followed the assignment.
 
 # **Tradeoffs / whats fragile**
-- the invoice side matching is not bulletproof, since it relies on description. couple of real cases i hit :
-   - gemini sometimes eats the space ("PorkHam", "PorkPepperoni") so those invoice lines dont match properly.
-   - the invoice descriptions are shorter than the PO - it drops the "24 Pieces" vs "10 Pieces" bit, so two different products look the same and get merged onto one PO line. joining PO<->GRN by code avoids this on the grn side, but the invoice has no shared code to fall back on so it still happens there.
-- i didnt try to force 100% accuracy on this, its a lossy ocr problem and chasing it wasnt worth it for this scope.
+- match endpoint now hits gemini once per call, so its a few seconds slower and uses up free-tier quota. the fuzzy fallback covers when the quota is gone but the result quality drops to "it works, kind of" on the messy lines.
+- gemini's output isnt 100% deterministic - same data, same call can give slightly different mappings sometimes. the fallback at least keeps things repeatable when AI is skipped.
+- the invoice descriptions are still lossy (PorkPepperoni concatenated, momos missing the piece-count etc). gemini handles most of it but not all - couple of lines still get merged onto the wrong PO item. i kept the unmatched-line reason code so the API still tells you what didnt fit, instead of silently hiding it.
+- i didnt try to push accuracy beyond this. its a lossy OCR problem and chasing the last 5% wasnt worth the scope.
 
 # **What i'd improve with more time**
-- better prompt / cleanup to fix the joined words from gemini.
-- a confidence score per item match , flag the low ones for manual check instead of silently matching wrong.
-- maybe use a proper string similarity library instead of my own word overlap thing.
+- cache the gemini invoice coz PO mapping inside the invoice doc at upload time so the match endpoint stays fast and doesnt re-burn quota on every GET.
+- better extraction prompt to fix the joined words from gemini at parse time itself ("PorkHam" -> "Pork Ham") instead of relying on the matcher to read past them.
+- confidence score per item match. flag the low-confidence ones for manual review instead of silently mapping.
 
 # **API**
 - POST /documents/upload
