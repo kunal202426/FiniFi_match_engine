@@ -32,7 +32,7 @@
   -> PO and GRN i join directly on itemCode - they literally share the same code,
      no need to guess. only the invoice side needs work.
 
-  -> for the invoice, i ask gemini itself to map each invoice line to the best
+  -> **BETTER INVOICE MAPPING** - for the invoice, i ask gemini itself to map each invoice line to the best
      PO itemCode in one batched call. it gets the PO list with codes/descriptions
      + the invoice lines, and returns an array of codes (or null per line). using
      the LLM here is way better than tokenizing because gemini can read past
