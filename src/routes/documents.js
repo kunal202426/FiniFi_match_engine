@@ -28,8 +28,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
   const parsed = await parsePdf(req.file.buffer, documentType);
 
-  // one po per ponumber, but many grns/invoices. replace by the doc's own
-  // number so re-uploading the same file doesnt duplicate, but distinct ones pile up
+//reupload overwrite logic
   const Model = modelMap[documentType];
   if (documentType === 'po') {
     await Model.deleteOne({ poNumber: parsed.poNumber });
