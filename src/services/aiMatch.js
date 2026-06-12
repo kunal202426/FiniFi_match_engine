@@ -23,9 +23,7 @@ const callGemini = async (parts) => {
   throw lastErr;
 };
 
-// ask gemini to map each invoice line to the best PO itemCode.
-// returns an array of itemCodes (or nulls), same length as invItems.
-// returns null if anything goes wrong so the caller can fall back to fuzzy matching.
+
 const matchInvoiceItemsToPO = async (poItems, invItems) => {
   if (!models.length || !invItems.length) return null;
 
@@ -62,7 +60,6 @@ Return ONLY a JSON array of strings/nulls, exactly ${invList.length} elements lo
 
     if (!Array.isArray(parsed) || parsed.length !== invItems.length) return null;
 
-    // only trust codes that actually exist in the po
     const validCodes = new Set(poItems.map((p) => p.itemCode));
     return parsed.map((c) => (typeof c === 'string' && validCodes.has(c) ? c : null));
   } catch {
