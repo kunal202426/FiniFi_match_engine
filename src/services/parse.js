@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// support multiple keys so we can fall back when one hits its free tier quota
+// support multiple keys as fallback
 const keys = (process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '')
   .split(',')
   .map((k) => k.trim())
@@ -67,10 +67,10 @@ For description: clean product name only, no prefixes or extra metadata.`,
 For description: clean product name only, no prefixes or extra metadata.`,
 };
 
-// gemini returns dates in all kinds of formats, normalize them
+
 const fixDate = (val) => {
   if (!val) return null;
-  // handle dd-mm-yyyy or dd/mm/yyyy (and single digit day/month)
+ 
   const parts = String(val).match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
   if (parts) return new Date(`${parts[3]}-${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}`);
   const d = new Date(val);
@@ -84,7 +84,6 @@ const dateFields = [
 
 const callGemini = async (parts) => {
   let lastErr;
-  // try each key in turn, move to the next one on quota/overload errors
   for (const model of models) {
     try {
       return await model.generateContent(parts);
