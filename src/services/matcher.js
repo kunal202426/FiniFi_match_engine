@@ -3,13 +3,12 @@ const GRN = require('../models/GRN');
 const CommercialInvoice = require('../models/CommercialInvoice');
 const { matchInvoiceItemsToPO } = require('./aiMatch');
 
-// words that show up inconsistently across po/grn/invoice and just add noise
+
 const stopWords = new Set([
   'meatigo', 'psm', 'frozen', 'rtc', 'everyday', 'fs', 'g', 'kg', 'pieces',
   'pcs', 'pack', 'the', 'and', '&', '-', 'plain',
 ]);
 
-// break a description into a set of meaningful words, with a few spelling fixes
 const tokenize = (str) => {
   return str
     .toLowerCase()
@@ -20,8 +19,6 @@ const tokenize = (str) => {
     .split(/\s+/)
     .filter((w) => w && !stopWords.has(w) && isNaN(w));
 };
-
-// score how similar two descriptions are by shared words
 const similarity = (a, b) => {
   const setA = tokenize(a);
   const setB = new Set(tokenize(b));
@@ -29,8 +26,6 @@ const similarity = (a, b) => {
   const shared = setA.filter((w) => setB.has(w)).length;
   return shared / Math.max(setA.length, setB.size);
 };
-
-// find the best matching item from a list for a given description
 const bestMatch = (desc, items) => {
   let best = null;
   let bestScore = 0;
@@ -57,8 +52,6 @@ const runMatch = async (poNumber) => {
     const missing = [!po && 'po', grns.length === 0 && 'grn', invoices.length === 0 && 'invoice'].filter(Boolean);
     return { poNumber, status: 'insufficient_documents', missing, reasons: [], documents };
   }
-
-  // flatten all grn and invoice line items across every grn/invoice for this po
   const grnItems = grns.flatMap((g) => g.items);
   const invItems = invoices.flatMap((i) => i.items);
 
@@ -66,16 +59,10 @@ const runMatch = async (poNumber) => {
 
   const grnQtyByPo = new Array(po.items.length).fill(0);
   const invQtyByPo = new Array(po.items.length).fill(0);
-
-  // po and grn share the buyer sku, so join them on itemCode directly
   for (const it of grnItems) {
     const idx = it.itemCode ? po.items.findIndex((p) => p.itemCode === it.itemCode) : -1;
     if (idx !== -1) grnQtyByPo[idx] += it.receivedQty || 0;
   }
-
-  // invoice uses the vendor's own codes, so it cant join on code.
-  // ask gemini to map each invoice line to a po itemCode (one batch call).
-  // if it fails / hits quota, aiCodes will be null and we fall back to the fuzzy bestMatch.
   const aiCodes = await matchInvoiceItemsToPO(po.items, invItems);
 
   for (let i = 0; i < invItems.length; i++) {
@@ -99,8 +86,6 @@ const runMatch = async (poNumber) => {
     const poItem = po.items[i];
     const grnQty = grnQtyByPo[i];
     const invQty = invQtyByPo[i];
-
-    // skip items that never showed up on a grn or invoice yet
     if (grnQty === 0 && invQty === 0) continue;
 
     let hadIssue = false;
@@ -121,12 +106,13 @@ const runMatch = async (poNumber) => {
     if (!hadIssue) cleanItems++;
   }
 
-  // rule 4, literal per assignment: invoice date must not be after po date
   for (const inv of invoices) {
     if (new Date(inv.invoiceDate) > new Date(po.poDate)) {
       reasons.push({ code: 'invoice_date_after_po_date', invoice: inv.invoiceNumber, invoiceDate: inv.invoiceDate, poDate: po.poDate });
     }
   }
+
+  
 
   let status;
   if (reasons.length === 0) {
