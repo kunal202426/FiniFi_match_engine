@@ -23,11 +23,18 @@
 
 # *Matching Engine*
 
-  -> the real problem : PO and GRN use buyer SKU (like 11423) but invoice uses vendor code (FG-P-F-0503). codes dont match so cant join on them.
+  -> the real problem : PO and GRN both use the buyer SKU (like 11423), but the
+     invoice uses the vendor's own code (FG-P-F-0503). so the invoice code matches
+     nothing in the other two.
 
-  -> so we join on product description instead. its the only field that looks similar across all 3.
+  -> PO and GRN i just join directly on itemCode - they literally share the same
+     code, no need to guess. its only the invoice that cant join on code, so for
+     the invoice i fall back to matching on product description.
 
-  -> description matching - i clean the text (remove brand words like Meatigo, Frozen, units etc), break into words and match on how many words overlap. each invoice/grn line picks its single best PO item then we add up the qtys.
+  -> description matching (invoice side only) - clean the text (drop brand words
+     like Meatigo, Frozen, units etc), break into words, score two descriptions by
+     how many words they share. each invoice line picks its single best PO item and
+     i add up the qtys. grn qtys just get summed straight by code.
 
   -> 4 rules , each gives a reason code :
      - grn qty > po qty  -> grn_qty_exceeds_po_qty
@@ -54,10 +61,10 @@
 - rule 4 (invoice date not after po date) i kept exactly as written even though in real life invoice always comes after the po. just followed the assignment.
 
 # **Tradeoffs / whats fragile**
-- description matching is not bulletproof ofc. couple of real cases i hit :
-   - gemini sometimes eats the space ("PorkHam", "PorkPepperoni") so those lines dont match properly.
-   - grn and invoice descriptions are shorter than po , they drop the "24 Pieces" vs "10 Pieces" part , so two different products end up looking the same and get merged.
-- i didnt try to force 100% accuracy on this , its a lossy ocr problem and chasing it was not worth it for this scope.
+- the invoice side matching is not bulletproof, since it relies on description. couple of real cases i hit :
+   - gemini sometimes eats the space ("PorkHam", "PorkPepperoni") so those invoice lines dont match properly.
+   - the invoice descriptions are shorter than the PO - it drops the "24 Pieces" vs "10 Pieces" bit, so two different products look the same and get merged onto one PO line. joining PO<->GRN by code avoids this on the grn side, but the invoice has no shared code to fall back on so it still happens there.
+- i didnt try to force 100% accuracy on this, its a lossy ocr problem and chasing it wasnt worth it for this scope.
 
 # **What i'd improve with more time**
 - better prompt / cleanup to fix the joined words from gemini.
