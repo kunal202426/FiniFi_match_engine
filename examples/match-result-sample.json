@@ -3,46 +3,6 @@
     "status": "partially_matched",
     "reasons": [
         {
-            "code": "item_missing_in_po",
-            "item": "Frozen PorkHam"
-        },
-        {
-            "code": "invoice_qty_exceeds_grn_qty",
-            "item": "Pork Salami 200.0 g",
-            "invoiceQty": 115,
-            "grnQty": 75
-        },
-        {
-            "code": "invoice_qty_exceeds_po_qty",
-            "item": "Pork Salami 200.0 g",
-            "invoiceQty": 115,
-            "poQty": 75
-        },
-        {
-            "code": "invoice_qty_exceeds_grn_qty",
-            "item": "Meatigo Chicken Drumsticks 450.0 g",
-            "invoiceQty": 922,
-            "grnQty": 270
-        },
-        {
-            "code": "invoice_qty_exceeds_po_qty",
-            "item": "Meatigo Chicken Drumsticks 450.0 g",
-            "invoiceQty": 922,
-            "poQty": 270
-        },
-        {
-            "code": "invoice_qty_exceeds_grn_qty",
-            "item": "Original Chicken Momos 24 Pieces",
-            "invoiceQty": 925,
-            "grnQty": 475
-        },
-        {
-            "code": "invoice_qty_exceeds_po_qty",
-            "item": "Original Chicken Momos 24 Pieces",
-            "invoiceQty": 925,
-            "poQty": 475
-        },
-        {
             "code": "invoice_qty_exceeds_grn_qty",
             "item": "Spicy Chicken Momos 24 Pieces",
             "invoiceQty": 375,
@@ -56,27 +16,9 @@
         },
         {
             "code": "invoice_qty_exceeds_grn_qty",
-            "item": "Veg & Paneer Momos 24 Pieces",
-            "invoiceQty": 475,
-            "grnQty": 75
-        },
-        {
-            "code": "invoice_qty_exceeds_po_qty",
-            "item": "Veg & Paneer Momos 24 Pieces",
-            "invoiceQty": 475,
-            "poQty": 75
-        },
-        {
-            "code": "invoice_qty_exceeds_grn_qty",
-            "item": "Pork Breakfast Bacon 300.0 g",
+            "item": "Pork Breakfast Bacon 150.0 g",
             "invoiceQty": 36,
             "grnQty": 0
-        },
-        {
-            "code": "invoice_qty_exceeds_po_qty",
-            "item": "Pork Breakfast Bacon 300.0 g",
-            "invoiceQty": 36,
-            "poQty": 20
         },
         {
             "code": "invoice_date_after_po_date",
