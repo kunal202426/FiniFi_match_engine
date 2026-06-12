@@ -4,6 +4,8 @@
 - after parsing i stored it in MongoDB
 - Match computed based on rules and demand by poNumber.
 
+**REQUIRED DELIVERABLES - examples folder having both outputs and Three-way-macth.postman_collection.js file in root folder**
+
 # **DATA MODEL**
 - each document type has different fields , one collection would mean a mess of tangled data
 - although a single collection wouyld've made the fetch queries simpler. But no clarity.
