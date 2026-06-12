@@ -1,6 +1,7 @@
 const PurchaseOrder = require('../models/PurchaseOrder');
 const GRN = require('../models/GRN');
 const CommercialInvoice = require('../models/CommercialInvoice');
+const { matchInvoiceItemsToPO } = require('./aiMatch');
 
 // words that show up inconsistently across po/grn/invoice and just add noise
 const stopWords = new Set([
@@ -63,17 +64,28 @@ const runMatch = async (poNumber) => {
 
   const reasons = [];
 
-  // each grn/invoice line maps to its single best po item, then we add up the qtys
   const grnQtyByPo = new Array(po.items.length).fill(0);
   const invQtyByPo = new Array(po.items.length).fill(0);
 
+  // po and grn share the buyer sku, so join them on itemCode directly
   for (const it of grnItems) {
-    const poItem = bestMatch(it.description, po.items);
-    if (poItem) grnQtyByPo[po.items.indexOf(poItem)] += it.receivedQty || 0;
+    const idx = it.itemCode ? po.items.findIndex((p) => p.itemCode === it.itemCode) : -1;
+    if (idx !== -1) grnQtyByPo[idx] += it.receivedQty || 0;
   }
 
-  for (const it of invItems) {
-    const poItem = bestMatch(it.description, po.items);
+  // invoice uses the vendor's own codes, so it cant join on code.
+  // ask gemini to map each invoice line to a po itemCode (one batch call).
+  // if it fails / hits quota, aiCodes will be null and we fall back to the fuzzy bestMatch.
+  const aiCodes = await matchInvoiceItemsToPO(po.items, invItems);
+
+  for (let i = 0; i < invItems.length; i++) {
+    const it = invItems[i];
+    let poItem = null;
+
+    const aiCode = aiCodes ? aiCodes[i] : null;
+    if (aiCode) poItem = po.items.find((p) => p.itemCode === aiCode) || null;
+    if (!poItem) poItem = bestMatch(it.description, po.items);
+
     if (poItem) {
       invQtyByPo[po.items.indexOf(poItem)] += it.quantity || 0;
     } else {
