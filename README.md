@@ -23,6 +23,8 @@
   
   -> FallBack to multiple API keys as we are using Free tier gemini keys.
 
+  -> AI assisted invoice mapping due to lossy problem for the description matching.
+
 # *Matching Engine*
 
   -> the real problem : PO and GRN both use the buyer SKU (like 11423), but the
